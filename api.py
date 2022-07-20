@@ -78,7 +78,7 @@ def user_detail(id):
 @app.route("/user/<id>", methods=["PUT"])
 def user_update(id):
     user = User.query.get(id)
-    columns = ['user_name', 'email']
+    columns = ['username', 'email']
     for c in columns:
         if c in request.values:
             setattr(user, c, request.values[c])
