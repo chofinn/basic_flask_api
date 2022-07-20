@@ -76,7 +76,6 @@ def user_detail(id):
 
 # endpoint to update user
 @app.route("/user/<id>", methods=["PUT"])
-#@check_token
 def user_update(id):
     user = User.query.get(id)
     columns = ['user_name', 'email']
@@ -90,7 +89,6 @@ def user_update(id):
 
 # endpoint to delete user
 @app.route("/user/<id>", methods=["DELETE"])
-#@check_token
 def user_delete(id):
     user = User.query.get(id)
 
