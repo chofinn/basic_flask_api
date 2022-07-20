@@ -23,7 +23,7 @@ class User(db.Model):
 class UserSchema(ma.Schema):
     class Meta:
         # Fields to expose
-        fields = ('username', 'email')
+        fields = ('id', 'username', 'email')
 
 
 user_schema = UserSchema()
@@ -35,18 +35,25 @@ users_schema = UserSchema(many=True)
 def index():
     return "it works!"
     
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#          user CRUD             #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # endpoint to create new user
 @app.route("/user", methods=["POST"])
 def add_user():
-    username = request.json['username']
-    email = request.json['email']
+    columns = ['username', 'email']
+    col_values = []
+    for c in columns:
+        if c in request.values:
+            col_values.append(request.values[c])
+        else:
+            col_values.append(None)
+    new_user = User(*col_values)
     
-    new_user = User(username, email)
-
     db.session.add(new_user)
     db.session.commit()
 
-    return user_schema.jsonify(new_user)
+    return {'message': 'successfully create new user'},200
 
 
 # endpoint to show all users
@@ -54,38 +61,43 @@ def add_user():
 def get_user():
     all_users = User.query.all()
     result = users_schema.dump(all_users)
-    return users_schema.jsonify(result)
 
+    result_json = users_schema.jsonify(result)
+
+    return result_json
 
 # endpoint to get user detail by id
 @app.route("/user/<id>", methods=["GET"])
 def user_detail(id):
     user = User.query.get(id)
+
     return user_schema.jsonify(user)
 
 
 # endpoint to update user
 @app.route("/user/<id>", methods=["PUT"])
+#@check_token
 def user_update(id):
     user = User.query.get(id)
-    username = request.json['username']
-    email = request.json['email']
-
-    user.email = email
-    user.username = username
+    columns = ['user_name', 'email']
+    for c in columns:
+        if c in request.values:
+            setattr(user, c, request.values[c])
 
     db.session.commit()
-    return user_schema.jsonify(user)
+    return {'message': 'successfully update user'}, 200
 
 
 # endpoint to delete user
 @app.route("/user/<id>", methods=["DELETE"])
+#@check_token
 def user_delete(id):
     user = User.query.get(id)
+
     db.session.delete(user)
     db.session.commit()
 
-    return user_schema.jsonify(user)
+    return {'message': 'successfully delete user'}, 200
 
 
 if __name__ == '__main__':
